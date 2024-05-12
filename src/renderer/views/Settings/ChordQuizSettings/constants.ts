@@ -41,6 +41,18 @@ export const fields = {
       },
     ],
   },
+  chordSubset: {
+    choices: [
+      {
+        value: '0',
+        label: 'All Chords',
+      },
+      {
+        value: '1',
+        label: 'Jazz 7th (9th) Chords',
+      },
+    ],
+  },
   chordNotation: {
     choices: [
       {

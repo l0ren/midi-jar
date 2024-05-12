@@ -249,13 +249,53 @@ export function getRandomChord(keySignature: KeySignatureConfig, chordComplexity
       Math.min(COMPLEXITY_MAX, calculateComplexity(chord.intervals)) <= chordComplexity
   );
 
-  const type = randomPick(chordTypes);
 
-  const tonic = getNoteInKeySignature(randomPick(NOTE_NAMES), keySignature.notes);
+  if (chordTypes === undefined || chordTypes.length === 0) {
+    return Chord.getChord('maj7', "C")
+  }
+  else {
+    const type = randomPick(chordTypes);
 
-  return Chord.getChord(type.aliases[0], tonic);
+    const tonic = getNoteInKeySignature(randomPick(NOTE_NAMES), keySignature.notes);
+
+    return Chord.getChord(type.aliases[0], tonic);
+  }
 }
 
+/**
+ * Picks a random chord for a specified keySignature and complexity
+ *
+ * @param keySignature
+ * @param chordComplexity
+ * @returns
+ */
+export function getRandomJazzChord(keySignature: KeySignatureConfig, chordComplexity: number) {
+
+  if (chordComplexity < 2) {
+    chordComplexity = 2
+  }
+  const chordTypes = ChordType.all().filter(
+    (chord) =>
+      chord.intervals.length > 2 &&
+      Math.min(COMPLEXITY_MAX, calculateComplexity(chord.intervals)) <= chordComplexity &&
+      (chord?.aliases[0] === 'maj9' || chord?.aliases[0] === 'min9') // This works, filters down to only maj7 chords
+  );
+
+  // chord.name.match('min7') // this gives runtime error, "Cannot read properties of undefined"
+  // chord.name.endsWith("maj7") === true // This gives same runtime error as above
+  // chord.name.length > 3 // This seems to run ok
+
+  if (chordTypes === undefined || chordTypes.length === 0) {
+    return Chord.getChord('maj7', "C")
+  }
+  else {
+    const type = randomPick(chordTypes);
+
+    const tonic = getNoteInKeySignature(randomPick(NOTE_NAMES), keySignature.notes);
+
+    return Chord.getChord(type.aliases[0], tonic);
+  }
+}
 /**
  * Picks a random chord in a key signature, with given complexity
  *
@@ -320,6 +360,22 @@ export function generateChords(
  * @returns
  */
 export function generateGame(parameters: Parameters) {
+  if (parameters.chordSubset === 1) {
+    // Jazz seventh subset (really 9th chords)
+    const keySignature = getRandomKeySignature();
+    const game = {
+      chords: generateChords(parameters.gameLength, () =>
+        getRandomJazzChord(keySignature, parameters.difficulty)
+        // getRandomChord(keySignature, parameters.difficulty)
+      ),
+      score: 0,
+      played: [],
+      succeeded: 0,
+    };
+
+    return game;
+
+  }  
   if (parameters.mode === 'random') {
     const keySignature = getRandomKeySignature();
     const game = {

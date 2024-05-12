@@ -52,6 +52,7 @@ export const defaultChordDisplaySettings: ChordDisplaySettings = {
 
 export const defaultChordQuizSettings: ChordQuizSettings = {
   mode: 'random' as const,
+  chordSubset: 0 as const,
   difficulty: 0 as const,
   gameLength: 16,
   gamification: true,

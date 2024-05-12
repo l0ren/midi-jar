@@ -35,6 +35,14 @@ const ChordQuizSettings: React.FC = () => {
             />
           </FormField>
 
+          <FormField label="Chord Subset" hint="Subset of chords for quiz, by category.">
+            <Select
+              options={fields.chordSubset.choices}
+              onChange={(value: string) => updateSetting('chordQuiz.chordSubset', Number(value))}
+              value={`${settings.chordQuiz.chordSubset}`}
+            />
+          </FormField>
+
           <FormField
             label="Difficulty"
             hint="An arbitrary complexity score is given to chords, the more intervals and alterations a chord has, the more it is complex."
