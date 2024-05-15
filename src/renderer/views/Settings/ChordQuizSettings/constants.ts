@@ -51,6 +51,10 @@ export const fields = {
         value: '1',
         label: 'Jazz 7th (9th) Chords',
       },
+      {
+        value: '2',
+        label: 'Filtered chords',
+      },
     ],
   },
   chordNotation: {

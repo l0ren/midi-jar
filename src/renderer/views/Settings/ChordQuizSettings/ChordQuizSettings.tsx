@@ -9,6 +9,7 @@ import {
   Slider,
   Select,
   Toolbar,
+  Input,
 } from '@la-jarre-a-son/ui';
 
 import { useSettings } from 'renderer/contexts/Settings';
@@ -42,6 +43,27 @@ const ChordQuizSettings: React.FC = () => {
               value={`${settings.chordQuiz.chordSubset}`}
             />
           </FormField>
+
+          <FormField label="Chord Filter" hint="Subset of chords for quiz, by category.">
+            <Input
+              type="string"
+              onChange={(value: string) =>
+                updateSetting('chordQuiz.chordFilterString', String(value))
+              }
+              value={`${settings.chordQuiz.chordFilterString}`}
+            />
+          </FormField>
+
+          <FormControlLabel
+            label="Assume root"
+            hint="Assume root is played, enabling practice of rootless voicings"
+            reverse
+          >
+            <Switch
+              onChange={(value) => updateSetting('chordQuiz.assumeRoot', value)}
+              checked={settings.chordQuiz.assumeRoot}
+            />
+          </FormControlLabel>
 
           <FormField
             label="Difficulty"
