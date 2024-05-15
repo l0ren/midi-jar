@@ -336,7 +336,8 @@ export function getRandomChordInKey(keySignature: KeySignatureConfig, chordCompl
 export function getRandomFilteredChord(keySignature: KeySignatureConfig, filterArray: string[]) {
   const chordTypes = ChordType.all().filter(
     (chord) => chord.intervals.length > 2 &&
-      chord?.aliases[0] === filterArray[0] // Works, until delete and doesn't match, then hangs
+      // chord?.aliases[0] === filterArray[0] // Works, until delete and doesn't match, then hangs
+      filterArray.some((element) => chord?.aliases[0] === element)
     // (chord?.aliases[0] === 'dom9') // This works, filters down to only maj7 chords
     // filterArray.findIndex((element) => element.includes(chord?.aliases[0]))
   );
@@ -346,8 +347,8 @@ export function getRandomFilteredChord(keySignature: KeySignatureConfig, filterA
   // chord.name.length > 3 // This seems to run ok
 
   if (typeof chordTypes === 'undefined' || chordTypes.length === 0) {
-    // return Chord.getChord('maj7', 'C');
-    return getRandomChordInKey(keySignature, 1);
+    // return Chord.getChord('maj7', 'C');  // This fails for some reason
+    return getRandomChordInKey(keySignature, 1);    // This works but returns all chords
   }
 
   const type = randomPick(chordTypes);
