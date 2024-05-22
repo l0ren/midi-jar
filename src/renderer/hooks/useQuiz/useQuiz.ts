@@ -56,6 +56,8 @@ function reducer(state: State, action: Action): State {
           status: STATUSES.none,
           chord: null,
           score: 0,
+          gameStartTimeSeconds: -1,
+          elapsedTimeSeconds: -1,
         },
       };
     }
@@ -68,8 +70,15 @@ function reducer(state: State, action: Action): State {
           state.gameState.index,
           state.games[state.gameState.gameIndex].chords[state.gameState.index],
           chord,
-          pitchClasses
+          pitchClasses,
+          state.gameState.elapsedTimeSeconds,
+          state.gameState.gameStartTimeSeconds
         );
+
+        // If we haven't initialized the game start time, do it now (need to figure out where the construtors for this are)
+        if (state.gameState.gameStartTimeSeconds <= 0) {
+          state.gameState.gameStartTimeSeconds = Date.now() / 1000.0;
+        }
 
         if (
           !best.chord ||
@@ -100,11 +109,25 @@ function reducer(state: State, action: Action): State {
         currentGame.score += state.gameState.score;
         currentGame.played.push(state.gameState.chord);
 
+        // If we haven't initialized the game start time, do it now (need to figure out where the construtors for this are)
+        if (state.gameState.gameStartTimeSeconds <= 0) {
+          state.gameState.gameStartTimeSeconds = Date.now() / 1000.0;
+        }
+
+
+        // Show the user the average time it took to play each chord; give them something to improve.
+        state.gameState.elapsedTimeSeconds =
+          (Date.now() / 1000.0) - state.gameState.gameStartTimeSeconds;
+        currentGame.timePerChordSeconds = ('Elapsed ' + state.gameState.elapsedTimeSeconds + ' start ' + state.gameState.gameStartTimeSeconds + ' avg ' + state.gameState.elapsedTimeSeconds / state.gameState.index);
+
         if (state.gameState.index + 2 >= currentGame.chords.length) {
+          // Have reached the desired number of chords in the game. Start a new game.
+          // TODO: calculate stats for this game, for display
           const game = generateGame(state.parameters);
 
           if (game) {
             games.push(game);
+            state.gameState.gameStartTimeSeconds = -2;
           }
         }
 
@@ -123,6 +146,8 @@ function reducer(state: State, action: Action): State {
             status: STATUSES.none,
             chord: null,
             score: 0,
+            gameStartTimeSeconds: state.gameState.gameStartTimeSeconds,
+            elapsedTimeSeconds: state.gameState.elapsedTimeSeconds,
           },
         };
       }
@@ -135,6 +160,8 @@ function reducer(state: State, action: Action): State {
           status: STATUSES.none,
           chord: null,
           score: 0,
+          gameStartTimeSeconds: state.gameState.gameStartTimeSeconds,
+          elapsedTimeSeconds: state.gameState.elapsedTimeSeconds,
         },
       };
     }
@@ -157,6 +184,8 @@ const defaultState: State = {
     status: STATUSES.none,
     chord: null,
     score: 0,
+    gameStartTimeSeconds: 0,
+    elapsedTimeSeconds: 0,
   },
 };
 

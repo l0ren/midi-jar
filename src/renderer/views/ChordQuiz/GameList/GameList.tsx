@@ -66,6 +66,7 @@ const GameList: React.FC<Props> = ({
         >
           <span className={cx('label')}>GAME {game.index + 1}</span>
           <span className={cx('score')}>{game.score}</span>
+          <span className={cx('label')}>{game.timePerChordSeconds}</span>
         </li>
       ))}
     </ul>

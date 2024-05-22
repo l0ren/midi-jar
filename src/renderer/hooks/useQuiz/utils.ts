@@ -33,6 +33,7 @@ export type Game = {
   chords: TChord[];
   played: (TChord | null)[];
   succeeded: number;
+  timePerChordSeconds: string;
 };
 
 export type GameState = {
@@ -41,6 +42,8 @@ export type GameState = {
   chord: TChord | null;
   status: STATUSES;
   score: number;
+  gameStartTimeSeconds: number;
+  elapsedTimeSeconds: number;
 };
 
 const debug = makeDebug('app:midi:utils');
@@ -122,6 +125,33 @@ export function getDictionaryChordsByComplexity() {
     );
 }
 
+
+/**
+ * Returns all filtered chords from dictionary, based on current settings
+ *
+ * @returns {Object}
+ */
+/**
+export function getDictionaryChordsByFilter() {
+  // if (settings)
+
+  return ChordType.all()
+    .filter((chord) => chord.intervals.length > 2)
+    .map((c) => ({
+      ...c,
+      complexity: calculateComplexity(c.intervals),
+    }))
+    .reduce(
+      (acc, c) => {
+        const complexity = Math.min(COMPLEXITY_MAX, c.complexity);
+        acc[complexity] = acc[complexity] ?? [];
+        acc[complexity].push(c.aliases[0]);
+        return acc;
+      },
+      {} as Record<number, string[]>
+    );
+}
+*/
 // (function consoleLogChordDifficulty() {
 //   const dict = getDictionaryChordsByComplexity();
 
@@ -178,10 +208,20 @@ export function getGameState(
   index: number,
   target: TChord,
   played: TChord | null,
-  pitchClasses: string[]
+  pitchClasses: string[],
+  elapsedTimeSeconds: number,
+  gameStartTimeSeconds: number,
 ): GameState {
   if (!played || !played.tonic || !target.tonic)
-    return { gameIndex, index, status: STATUSES.none, chord: null, score: 0 };
+    return {
+      gameIndex,
+      index,
+      status: STATUSES.none,
+      chord: null,
+      score: 0,
+      gameStartTimeSeconds,
+      elapsedTimeSeconds,
+    };
 
   if (Note.chroma(played.tonic) === Note.chroma(target.tonic)) {
     const targetIntervals = removeIntervalWildcards(target.intervals);
@@ -198,6 +238,8 @@ export function getGameState(
         status: STATUSES.superset,
         chord: played,
         score: calculateScore(chordComplexity, chordLev, 0, targetLev, !!played.root),
+        gameStartTimeSeconds,
+        elapsedTimeSeconds,
       };
     }
     if (isEqual(target.chroma, played.chroma))
@@ -207,6 +249,8 @@ export function getGameState(
         status: STATUSES.equal,
         chord: played,
         score: calculateScore(chordComplexity, chordLev, 0, 0, !!played.root),
+        gameStartTimeSeconds,
+        elapsedTimeSeconds,
       };
 
     if (isSubsetOf(target.chroma)(played.chroma))
@@ -216,6 +260,8 @@ export function getGameState(
         status: STATUSES.subset,
         chord: played,
         score: calculateScore(chordComplexity, chordLev, targetLev, 0, !!played.root),
+        gameStartTimeSeconds,
+        elapsedTimeSeconds,
       };
   }
 
@@ -225,7 +271,9 @@ export function getGameState(
     status: STATUSES.different,
     chord: played,
     score: SCORE_DIFFERENT,
-  };
+    gameStartTimeSeconds,
+    elapsedTimeSeconds,
+};
 }
 
 /**
@@ -336,18 +384,12 @@ export function getRandomChordInKey(keySignature: KeySignatureConfig, chordCompl
 export function getRandomFilteredChord(keySignature: KeySignatureConfig, filterArray: string[]) {
   const chordTypes = ChordType.all().filter(
     (chord) => chord.intervals.length > 2 &&
-      // chord?.aliases[0] === filterArray[0] // Works, until delete and doesn't match, then hangs
       filterArray.some((element) => chord?.aliases[0] === element)
-    // (chord?.aliases[0] === 'dom9') // This works, filters down to only maj7 chords
-    // filterArray.findIndex((element) => element.includes(chord?.aliases[0]))
   );
-
-  // chord.name.match('min7') // this gives runtime error, "Cannot read properties of undefined"
-  // chord.name.endsWith("maj7") === true // This gives same runtime error as above
-  // chord.name.length > 3 // This seems to run ok
 
   if (typeof chordTypes === 'undefined' || chordTypes.length === 0) {
     // return Chord.getChord('maj7', 'C');  // This fails for some reason
+    // TODO: fix this to return just one chord, or better fix UI to handle "no chords"
     return getRandomChordInKey(keySignature, 1);    // This works but returns all chords
   }
 
@@ -400,6 +442,7 @@ export function generateGame(parameters: Parameters) {
       score: 0,
       played: [],
       succeeded: 0,
+      timePerChordSeconds: '?1',
     };
 
     debug('Generated new filtered jazz subset game');
@@ -420,6 +463,7 @@ export function generateGame(parameters: Parameters) {
       score: 0,
       played: [],
       succeeded: 0,
+      timePerChordSeconds: '?2',
     };
 
     debug('Generated new filtered chord subset game');
@@ -436,6 +480,7 @@ export function generateGame(parameters: Parameters) {
       score: 0,
       played: [],
       succeeded: 0,
+      timePerChordSeconds: '?3',
     };
 
     return game;
@@ -449,6 +494,7 @@ export function generateGame(parameters: Parameters) {
       score: 0,
       played: [],
       succeeded: 0,
+      timePerChordSeconds: '?4',
     };
     return game;
   }

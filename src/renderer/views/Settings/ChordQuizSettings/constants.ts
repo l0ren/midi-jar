@@ -80,3 +80,4 @@ export const fields = {
 };
 
 export const chordsByComplexity = getDictionaryChordsByComplexity();
+// export const chordsByFilter = getDictionaryChordsByFilter();

@@ -77,6 +77,9 @@ const ChordQuizSettings: React.FC = () => {
           </FormField>
 
           <div className={cx('chordList')}>
+            {settings.chordQuiz.chordSubset > 0 && (
+              <span className={cx('previousLevel')}>Filtered Chords: </span>
+            )}
             {settings.chordQuiz.difficulty > 0 && (
               <span className={cx('previousLevel')}>Previous level +</span>
             )}
