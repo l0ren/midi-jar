@@ -54,17 +54,6 @@ const ChordQuizSettings: React.FC = () => {
             />
           </FormField>
 
-          <FormControlLabel
-            label="Assume root"
-            hint="Assume root is played, enabling practice of rootless voicings"
-            reverse
-          >
-            <Switch
-              onChange={(value) => updateSetting('chordQuiz.assumeRoot', value)}
-              checked={settings.chordQuiz.assumeRoot}
-            />
-          </FormControlLabel>
-
           <FormField
             label="Difficulty"
             hint="An arbitrary complexity score is given to chords, the more intervals and alterations a chord has, the more it is complex."

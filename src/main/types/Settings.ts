@@ -44,7 +44,6 @@ export type ChordQuizSettings = {
   mode: 'random' | 'randomInKey';
   chordSubset: number;
   chordFilterString: string;
-  assumeRoot: boolean;
   difficulty: 0 | 1 | 2 | 3 | 4 | 5;
   gameLength: number;
   gamification: boolean;
