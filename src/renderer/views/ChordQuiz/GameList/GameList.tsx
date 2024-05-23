@@ -52,8 +52,9 @@ const GameList: React.FC<Props> = ({
     <ul className={cx('base', className)}>
       {displayedGames.length > maxCount && (
         <li className={cx('game', 'game--best')}>
-          <span className={cx('label')}>BEST</span>
+          <span className={cx('label')}>BEST    </span>
           <span className={cx('score')}>{best}</span>
+          <span className={cx('label')}>AVG</span>
         </li>
       )}
       {displayedGames.map((game, index) => (
@@ -66,7 +67,7 @@ const GameList: React.FC<Props> = ({
         >
           <span className={cx('label')}>GAME {game.index + 1}</span>
           <span className={cx('score')}>{game.score}</span>
-          <span className={cx('label')}>{game.timePerChordSeconds}</span>
+          <span className={cx('label')}>{game.timeMetricMessage}</span>
         </li>
       ))}
     </ul>

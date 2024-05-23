@@ -33,7 +33,9 @@ export type Game = {
   chords: TChord[];
   played: (TChord | null)[];
   succeeded: number;
-  timePerChordSeconds: string;
+  gameStartTimeSeconds: number;
+  elapsedTimeSeconds: number;
+  timeMetricMessage: string;
 };
 
 export type GameState = {
@@ -42,8 +44,6 @@ export type GameState = {
   chord: TChord | null;
   status: STATUSES;
   score: number;
-  gameStartTimeSeconds: number;
-  elapsedTimeSeconds: number;
 };
 
 const debug = makeDebug('app:midi:utils');
@@ -124,7 +124,6 @@ export function getDictionaryChordsByComplexity() {
       {} as Record<number, string[]>
     );
 }
-
 
 /**
  * Returns all filtered chords from dictionary, based on current settings
@@ -208,9 +207,7 @@ export function getGameState(
   index: number,
   target: TChord,
   played: TChord | null,
-  pitchClasses: string[],
-  elapsedTimeSeconds: number,
-  gameStartTimeSeconds: number,
+  pitchClasses: string[]
 ): GameState {
   if (!played || !played.tonic || !target.tonic)
     return {
@@ -219,8 +216,6 @@ export function getGameState(
       status: STATUSES.none,
       chord: null,
       score: 0,
-      gameStartTimeSeconds,
-      elapsedTimeSeconds,
     };
 
   if (Note.chroma(played.tonic) === Note.chroma(target.tonic)) {
@@ -238,8 +233,6 @@ export function getGameState(
         status: STATUSES.superset,
         chord: played,
         score: calculateScore(chordComplexity, chordLev, 0, targetLev, !!played.root),
-        gameStartTimeSeconds,
-        elapsedTimeSeconds,
       };
     }
     if (isEqual(target.chroma, played.chroma))
@@ -249,8 +242,6 @@ export function getGameState(
         status: STATUSES.equal,
         chord: played,
         score: calculateScore(chordComplexity, chordLev, 0, 0, !!played.root),
-        gameStartTimeSeconds,
-        elapsedTimeSeconds,
       };
 
     if (isSubsetOf(target.chroma)(played.chroma))
@@ -260,8 +251,6 @@ export function getGameState(
         status: STATUSES.subset,
         chord: played,
         score: calculateScore(chordComplexity, chordLev, targetLev, 0, !!played.root),
-        gameStartTimeSeconds,
-        elapsedTimeSeconds,
       };
   }
 
@@ -271,8 +260,6 @@ export function getGameState(
     status: STATUSES.different,
     chord: played,
     score: SCORE_DIFFERENT,
-    gameStartTimeSeconds,
-    elapsedTimeSeconds,
 };
 }
 
@@ -373,7 +360,6 @@ export function getRandomChordInKey(keySignature: KeySignatureConfig, chordCompl
   return Chord.getChord(type.aliases[0], tonic);
 }
 
-
 /**
  * Picks a random chord for a specified keySignature and filter array
  *
@@ -390,7 +376,7 @@ export function getRandomFilteredChord(keySignature: KeySignatureConfig, filterA
   if (typeof chordTypes === 'undefined' || chordTypes.length === 0) {
     // return Chord.getChord('maj7', 'C');  // This fails for some reason
     // TODO: fix this to return just one chord, or better fix UI to handle "no chords"
-    return getRandomChordInKey(keySignature, 1);    // This works but returns all chords
+    return getRandomChordInKey(keySignature, 1); // This works but returns all chords
   }
 
   const type = randomPick(chordTypes);
@@ -442,7 +428,9 @@ export function generateGame(parameters: Parameters) {
       score: 0,
       played: [],
       succeeded: 0,
-      timePerChordSeconds: '?1',
+      gameStartTimeSeconds: Date.now() / 1000.0, // This starts game immediately, would be better if it started on first chord hit?
+      elapsedTimeSeconds: 0,
+      timeMetricMessage: 'New Game',
     };
 
     debug('Generated new filtered jazz subset game');
@@ -463,7 +451,9 @@ export function generateGame(parameters: Parameters) {
       score: 0,
       played: [],
       succeeded: 0,
-      timePerChordSeconds: '?2',
+      gameStartTimeSeconds: Date.now() / 1000.0,
+      elapsedTimeSeconds: 0,
+      timeMetricMessage: 'New Game',
     };
 
     debug('Generated new filtered chord subset game');
@@ -480,7 +470,9 @@ export function generateGame(parameters: Parameters) {
       score: 0,
       played: [],
       succeeded: 0,
-      timePerChordSeconds: '?3',
+      gameStartTimeSeconds: Date.now() / 1000.0,
+      elapsedTimeSeconds: 0,
+      timeMetricMessage: 'New Game',
     };
 
     return game;
@@ -494,7 +486,9 @@ export function generateGame(parameters: Parameters) {
       score: 0,
       played: [],
       succeeded: 0,
-      timePerChordSeconds: '?4',
+      gameStartTimeSeconds: Date.now() / 1000.0,
+      elapsedTimeSeconds: 0,
+      timeMetricMessage: 'New Game',
     };
     return game;
   }
