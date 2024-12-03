@@ -7,39 +7,12 @@ import { useModuleSettings, useSettings } from 'renderer/contexts/Settings';
 import useNotes from 'renderer/hooks/useNotes';
 import { Notation, PianoKeyboard, ChordIntervals, ChordNameLink } from 'renderer/components';
 
-// JLP
-import { KeyboardSettings } from 'main/types';
-import { defaultKeyboardSettings } from 'main/store/defaults';
-
-
 import styles from './ChordDisplay.module.scss';
-
-
 
 const cx = classnames.bind(styles);
 
 type Props = {
   moduleId: string;
-};
-
-// JLP test here
-const KEYBOARD_SETTINGS: KeyboardSettings = {
-  ...defaultKeyboardSettings,
-  skin: 'classic',
-  from: 'C3',
-  to: 'B5',
-  label: 'chordNote',
-  keyName: 'none',
-  keyInfo: 'tonicAndInterval',
-  textOpacity: 1,
-  displaySustained: true,
-  wrap: true,
-  sizes: {
-    radius: 0.4,
-    height: 4,
-    ratio: 0.6,
-    bevel: true,
-  },
 };
 
 // JLP copied from util.ts of ChordDetail module... resolve
@@ -103,8 +76,13 @@ const ChordDisplayModule: React.FC<Props> = ({ moduleId }) => {
     keyboard,
   } = moduleSettings;
 
-  // JLP
-  const targetChord=Chord.getChord('maj13', 'Db')
+  // JLP: Target Chord is really the target scale that we want to use
+  // const targetChord=Chord.getChord('maj13', 'Db')
+  // Seems like what we want here is something like "keySignature?.notes"
+  // const targetChord = keySignature?.notes; // Does not work
+  const targetChord = Chord.getChord('maj13', keySignature?.tonic); // This works to get the tonic, but hardcoded to maj13
+  // const targetChord = Chord.getChord('maj13', 'C4', 'C'); // Doesn't work, blue notes gone but all keys are red
+  // const targetChord = Chord.notes('maj13', 'C4'); // weirdly method not available though it's part of tonal.js?
 
   return (
     <div id="chordDisplay" className={cx('base')}>
@@ -170,12 +148,12 @@ const ChordDisplayModule: React.FC<Props> = ({ moduleId }) => {
             sustained={sustainedMidiNotes}
             played={playedMidiNotes}
             midi={midiNotes}
-            // chord={chords[0] ?? undefined}
-            chord={targetChord}
-            targets={getChordInversionCopy(targetChord, 0)}
+            chord={chords[0] ?? undefined}
+            // chord={targetChord} // This gives us the notes that will be compared to for the MidiNotes to show as green (in this set) or red (not in set)
+            // JLP: this gives us red/green notes when we play piano keys that are out/in of the currently selected key (bottom left of UI). TODO: switch to disable
+            targets={getChordInversionCopy(targetChord, 0, 8)} // '8' here puts our notes in the 8th octave, so the blue keys don't show up on the piano
             keySignature={keySignature}
-            // keyboard={keyboard}
-            keyboard={KEYBOARD_SETTINGS}
+            keyboard={keyboard}
           />
         </div>
       )}
