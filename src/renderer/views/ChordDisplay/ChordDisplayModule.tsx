@@ -1,17 +1,71 @@
 import React from 'react';
 import classnames from 'classnames/bind';
+import { Note, Chord, ChordType } from 'tonal';
+import { Chord as TChord } from '@tonaljs/chord';
 
 import { useModuleSettings, useSettings } from 'renderer/contexts/Settings';
 import useNotes from 'renderer/hooks/useNotes';
 import { Notation, PianoKeyboard, ChordIntervals, ChordNameLink } from 'renderer/components';
 
+// JLP
+import { KeyboardSettings } from 'main/types';
+import { defaultKeyboardSettings } from 'main/store/defaults';
+
+
 import styles from './ChordDisplay.module.scss';
+
+
 
 const cx = classnames.bind(styles);
 
 type Props = {
   moduleId: string;
 };
+
+// JLP test here
+const KEYBOARD_SETTINGS: KeyboardSettings = {
+  ...defaultKeyboardSettings,
+  skin: 'classic',
+  from: 'C3',
+  to: 'B5',
+  label: 'chordNote',
+  keyName: 'none',
+  keyInfo: 'tonicAndInterval',
+  textOpacity: 1,
+  displaySustained: true,
+  wrap: true,
+  sizes: {
+    radius: 0.4,
+    height: 4,
+    ratio: 0.6,
+    bevel: true,
+  },
+};
+
+// JLP copied from util.ts of ChordDetail module... resolve
+function getChordInversionCopy(chord?: TChord, inversion = 0, octave = 3) {
+  if (!chord) return [];
+
+  const midi: number[] = [];
+  const octaveMidi = Note.midi(`C${octave}`) as number;
+
+  const notes = chord.notes
+    .slice(inversion % chord.notes.length)
+    .concat(chord.notes.slice(0, inversion % chord.notes.length));
+
+  for (let n = 0; n < notes.length; n += 1) {
+    let newMidi = Note.midi(`${notes[n]}${octave}`);
+    if (newMidi) {
+      while (newMidi < (midi.length ? midi[midi.length - 1] : octaveMidi)) {
+        newMidi += 12;
+      }
+
+      midi.push(newMidi);
+    }
+  }
+
+  return midi;
+}
 
 const ChordDisplayModule: React.FC<Props> = ({ moduleId }) => {
   const { settings } = useSettings();
@@ -48,6 +102,9 @@ const ChordDisplayModule: React.FC<Props> = ({ moduleId }) => {
     displayIntervals,
     keyboard,
   } = moduleSettings;
+
+  // JLP
+  const targetChord=Chord.getChord('maj13', 'Db')
 
   return (
     <div id="chordDisplay" className={cx('base')}>
@@ -113,9 +170,12 @@ const ChordDisplayModule: React.FC<Props> = ({ moduleId }) => {
             sustained={sustainedMidiNotes}
             played={playedMidiNotes}
             midi={midiNotes}
-            chord={chords[0] ?? undefined}
+            // chord={chords[0] ?? undefined}
+            chord={targetChord}
+            targets={getChordInversionCopy(targetChord, 0)}
             keySignature={keySignature}
-            keyboard={keyboard}
+            // keyboard={keyboard}
+            keyboard={KEYBOARD_SETTINGS}
           />
         </div>
       )}
